@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <title>Login System Testing</title>
+
+    <style>
+
+        body {
+            font-family: Arial;
+            background: #f2f2f2;
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 12px 30px;
+            background: #222;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #444;
+        }
+
+        #summary {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: #222;
+            color: white;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .pass {
+            color: green;
+            font-weight: bold;
+        }
+
+        .fail {
+            color: red;
+            font-weight: bold;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<h1>Login System - Automated Testing</h1>
+
+
+<button onclick="runTests()">
+    RUN ALL 50 TESTS
+</button>
+
+
+<div id="summary">
+    Click the button to start testing.
+</div>
+
+
+<table>
+
+    <thead>
+
+        <tr>
+
+            <th>Test ID</th>
+
+            <th>Username / Email</th>
+
+            <th>Password</th>
+
+            <th>Expected</th>
+
+            <th>Actual</th>
+
+            <th>Result</th>
+
+        </tr>
+
+    </thead>
+
+
+    <tbody id="results">
+
+    </tbody>
+
+</table>
+
+
+
+<script>
+
+
+
+const tests = [
+
+   
+
+    ["sakiba", "123456", "Successful"],
+    ["admin", "admin123", "Successful"],
+    ["sakiba@gmail.com", "123456", "Successful"],
+    ["admin@gmail.com", "admin123", "Successful"],
+
+    // Wrong Password
+
+    ["sakiba", "wrong123", "Failed"],
+    ["admin", "wrong123", "Failed"],
+    ["sakiba@gmail.com", "wrong", "Failed"],
+    ["admin@gmail.com", "123456", "Failed"],
+    ["sakiba", "000000", "Failed"],
+    ["admin", "password", "Failed"],
+
+   
+
+    ["wronguser", "123456", "Failed"],
+    ["testuser", "123456", "Failed"],
+    ["unknown", "admin123", "Failed"],
+    ["user123", "123456", "Failed"],
+    ["abc", "admin123", "Failed"],
+
+
+    ["", "", "Failed"],
+    ["", "123456", "Failed"],
+    ["sakiba", "", "Failed"],
+    ["", "admin123", "Failed"],
+    [" ", " ", "Failed"],
+
+   
+
+    ["SAKIBA", "123456", "Failed"],
+    ["Sakiba", "123456", "Failed"],
+    ["ADMIN", "admin123", "Failed"],
+    ["Admin", "admin123", "Failed"],
+
+   
+
+    ["sakiba@gmail.com", "123456", "Successful"],
+    ["SAKIBA@GMAIL.COM", "123456", "Failed"],
+    ["sakiba@gmail", "123456", "Failed"],
+    ["sakiba.com", "123456", "Failed"],
+    ["sakiba@", "123456", "Failed"],
+
+  
+
+    ["' OR '1'='1", "' OR '1'='1", "Failed"],
+    ["admin'--", "admin123", "Failed"],
+    ["' OR 1=1 --", "123456", "Failed"],
+    ["<script>alert(1)</script>", "123456", "Failed"],
+
+   
+
+    [" sakiba", "123456", "Failed"],
+    ["sakiba ", "123456", "Failed"],
+    [" sakiba ", "123456", "Failed"],
+    ["admin ", "admin123", "Failed"],
+
+ 
+
+    ["sakiba", "1", "Failed"],
+    ["sakiba", "123", "Failed"],
+    ["sakiba", "123456789", "Failed"],
+    ["sakiba", "12345678901234567890", "Failed"],
+
+
+    ["hello", "hello", "Failed"],
+    ["user", "password", "Failed"],
+    ["123456", "123456", "Failed"],
+    ["null", "null", "Failed"],
+    ["undefined", "undefined", "Failed"],
+
+    
+
+    ["notexist@gmail.com", "123456", "Failed"],
+    ["sakiba@gmail.com", "000000", "Failed"],
+    ["sakiba", "000000", "Failed"],
+    ["admin", "123456", "Failed"],
+    ["wrong", "wrong", "Failed"],
+    ["sakiba", "admin123", "Failed"]
+
+];
+
+
+
+async function runTests() {
+
+    const resultTable = document.getElementById("results");
+
+    const summary = document.getElementById("summary");
+
+    resultTable.innerHTML = "";
+
+    summary.innerHTML = "Running 50 test cases...";
+
+
+    let passed = 0;
+
+    let failed = 0;
+
+
+    for (let i = 0; i < tests.length; i++) {
+
+        let username = tests[i][0];
+
+        let password = tests[i][1];
+
+        let expected = tests[i][2];
+
+
+      
+
+        let formData = new FormData();
+
+        formData.append("username", username);
+
+        formData.append("password", password);
+
+
+        try {
+
+            let response = await fetch("test_api.php", {
+
+                method: "POST",
+
+                body: formData
+
+            });
+
+
+            let data = await response.json();
+
+
+            let actual = data.status;
+
+
+            let result;
+
+
+            if (actual === expected) {
+
+                result = "PASS";
+
+                passed++;
+
+            } else {
+
+                result = "FAIL";
+
+                failed++;
+
+            }
+
+
+            let row = document.createElement("tr");
+
+
+            row.innerHTML = `
+
+                <td>${i + 1}</td>
+
+                <td>${escapeHTML(username)}</td>
+
+                <td>${escapeHTML(password)}</td>
+
+                <td>${expected}</td>
+
+                <td>${actual}</td>
+
+                <td class="${result === "PASS" ? "pass" : "fail"}">
+
+                    ${result}
+
+                </td>
+
+            `;
+
+
+            resultTable.appendChild(row);
+
+
+        } catch (error) {
+
+            failed++;
+
+
+            let row = document.createElement("tr");
+
+
+            row.innerHTML = `
+
+                <td>${i + 1}</td>
+
+                <td>${escapeHTML(username)}</td>
+
+                <td>${escapeHTML(password)}</td>
+
+                <td>${expected}</td>
+
+                <td>Error</td>
+
+                <td class="fail">
+
+                    FAIL
+
+                </td>
+
+            `;
+
+
+            resultTable.appendChild(row);
+
+        }
+
+    }
+
+
+    // Final Summary
+
+    let percentage =
+        ((passed / tests.length) * 100).toFixed(2);
+
+
+    summary.innerHTML = `
+
+        <b>Total Test Cases:</b> ${tests.length}
+
+        &nbsp;&nbsp; | &nbsp;&nbsp;
+
+        <b class="pass">Passed:</b> ${passed}
+
+        &nbsp;&nbsp; | &nbsp;&nbsp;
+
+        <b class="fail">Failed:</b> ${failed}
+
+        &nbsp;&nbsp; | &nbsp;&nbsp;
+
+        <b>Pass Rate:</b> ${percentage}%
+
+    `;
+
+}
+
+
+
+function escapeHTML(text) {
+
+    return text
+
+        .replace(/&/g, "&amp;")
+
+        .replace(/</g, "&lt;")
+
+        .replace(/>/g, "&gt;")
+
+        .replace(/"/g, "&quot;")
+
+        .replace(/'/g, "&#039;");
+
+}
+
+
+</script>
+
+
+</body>
+
+</html>
